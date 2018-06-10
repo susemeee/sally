@@ -2,6 +2,9 @@
 import _ from 'lodash';
 
 class Handler {
+
+  static _handlers = [];
+
   static onText(match) {
     return function (target, name, { value }) {
       const _cls = target.constructor;
@@ -10,12 +13,14 @@ class Handler {
       _cls._handlers.push(['onText', match, value]);
     };
   }
+
+  static get handlers() {
+    return this._handlers;
+  }
 }
 
 
 export default class TelegramHandler extends Handler {
-
-  static _handlers = [];
 
   @Handler.onText(/\/subscribe$/)
   onSubscribe({ chat }) {
@@ -69,9 +74,5 @@ export default class TelegramHandler extends Handler {
     }
 
     this.bot.sendMessage(chat.id, 'broadcasted.');
-  }
-
-  static get handlers() {
-    return this._handlers;
   }
 }
