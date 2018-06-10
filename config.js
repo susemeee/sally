@@ -5,7 +5,7 @@ require('dotenv').config({
   path: require('path').join(__dirname, '.apikey'),
 });
 
-if (!process.env.API_KEY) {
+if (!process.env.BINANCE_API_KEY) {
   throw new Error('You should provide Binance API Key via .apikey file.');
 }
 
