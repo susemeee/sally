@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/susemeee/bart#readme",
   "dependencies": {
+    "consola": "^1.4.1",
     "dotenv": "^6.0.0",
     "lodash": "^4.17.10",
     "node-binance-api": "^0.7.1",

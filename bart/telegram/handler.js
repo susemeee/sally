@@ -1,5 +1,6 @@
 
 import _ from 'lodash';
+import consola from 'consola';
 
 class Handler {
 
@@ -25,7 +26,7 @@ export default class TelegramHandler extends Handler {
   @Handler.onText(/\/subscribe$/)
   onSubscribe({ chat }) {
     this.data.subscribers = _.union(this.data.subscribers, [ chat.id ]);
-    console.log(`${chat.id} subscribed`);
+    consola.info(`${chat.id} subscribed`);
     this.bot.sendMessage(chat.id, 'subscribed.');
   }
 
@@ -34,7 +35,7 @@ export default class TelegramHandler extends Handler {
 
     _.remove(this.data.subscribers, s => s === chat.id);
 
-    this.methods.log(`${chat.id} unsubscribed`);
+    consola.info(`${chat.id} unsubscribed`);
     this.bot.sendMessage(chat.id, 'unsubscribed.');
   }
 

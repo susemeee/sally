@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 
 import TelegramBotApi from 'node-telegram-bot-api';
+import consola from 'consola';
 
 export class TelegramBot {
 
@@ -25,9 +26,10 @@ export class TelegramBot {
     try {
       const _subscribersJSON = fs.readFileSync(TelegramBot.SUBSCRIBERS_PATH);
       this.data.subscribers = JSON.parse(_subscribersJSON);
-      console.log(`subscribers = ${_subscribersJSON}`);
+      consola.debug(`subscribers = ${_subscribersJSON}`);
     } catch (err) {
-      console.log('Load error; subscribers = []');
+      consola.error(err);
+      consola.warn('Load error; subscribers = []');
     }
   }
 
@@ -83,13 +85,13 @@ export class TelegramBot {
   }
 
   sendTo(to, message) {
-    if (!this.initialized) return console.log(message);
+    if (!this.initialized) return consola.info(message);
 
     this.bot.sendMessage(to, message);
   }
 
   broadcast(message) {
-    if (!this.initialized) return console.log(message);
+    if (!this.initialized) return consola.info(message);
 
     for (let subscriber of this.data.subscribers) {
       this.bot.sendMessage(subscriber, message);
