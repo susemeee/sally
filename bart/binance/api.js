@@ -7,6 +7,7 @@ export default class BinanceApiDispatcher {
     this.binanceApiCaller = binanceApiCaller;
   }
 
+  static CANDLESTICK_FETCH_COUNT = 500;
 
   /**
    * BinanceBalance: { BTC: { available: '0.00000000', onOrder: '0.00000000' }, ... }
@@ -14,6 +15,69 @@ export default class BinanceApiDispatcher {
    */
   async getBalance() {
     return util.promisify(this.binanceApiCaller.balance)();
+  }
+
+  /**
+   * Gets a candlestick of CANDLESTICK_FETCH_COUNT
+   * @param {String} symbol
+   * @param {Number} period
+   * @param {Date} endTime
+   */
+  _getCandlesticks(symbol, period, endTime) {
+    const KEYS = [
+      'time',
+      'open',
+      'high',
+      'low',
+      'close',
+      'volume',
+      'closeTime',
+      'assetVolume',
+      'trades',
+      'buyBaseVolume',
+      'buyAssetVolume',
+      'ignored'
+    ];
+
+    return new Promise((resolve, reject) => {
+      this.binanceApiCaller.candlesticks(symbol, period, (err, ticks, symbol) => {
+        if (err) reject(err);
+
+        const convertedTicks = ticks.map(tick => {
+          return KEYS.reduce((tickObj, key, i) => {
+            tickObj[key] = tick[i];
+            return tickObj;
+          }, {});
+        });
+
+        return resolve(convertedTicks);
+      });
+    }, { limit: BinanceApiDispatcher.CANDLESTICK_FETCH_COUNT, endTime: endTime });
+  }
+
+  /**
+   * Gets a candlestick history
+   * @param {String} symbol
+   * @param {Number} period
+   * @param {Date} endTime
+   */
+  async getCandleHistory(symbol, period, n = 500, endTime = Date.now()) {
+    const _candlesticks = [];
+    let _endTime = endTime;
+    let _n = n;
+
+    try {
+      while (_n > 0) {
+        _candlesticks.unshift(...(await this._getCandlesticks(symbol, period, _endTime)));
+        _n -= BinanceApiDispatcher.CANDLESTICK_FETCH_COUNT;
+        _endTime = _candlesticks[0].time;
+      }
+
+      return _candlesticks;
+
+    } catch (err) {
+      throw err;
+    }
   }
 
 
