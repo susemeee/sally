@@ -1,11 +1,8 @@
 
 import util from 'util';
+import Trader from '../trader';
 
-export default class BinanceApiDispatcher {
-
-  constructor(binanceApiCaller) {
-    this.binanceApiCaller = binanceApiCaller;
-  }
+export default class BinanceApiDispatcher extends Trader {
 
   static CANDLESTICK_FETCH_COUNT = 500;
 
@@ -14,7 +11,7 @@ export default class BinanceApiDispatcher {
    * @returns Promise<BinanceBalance>
    */
   async getBalance() {
-    return util.promisify(this.binanceApiCaller.balance)();
+    return util.promisify(this.caller.balance)();
   }
 
   /**
@@ -40,7 +37,7 @@ export default class BinanceApiDispatcher {
     ];
 
     return new Promise((resolve, reject) => {
-      this.binanceApiCaller.candlesticks(symbol, period, (err, ticks, symbol) => {
+      this.caller.candlesticks(symbol, period, (err, ticks, symbol) => {
         if (err) reject(err);
 
         const convertedTicks = ticks.map(tick => {
@@ -86,7 +83,7 @@ export default class BinanceApiDispatcher {
    * @param {Object<symbol: tradeEvent>} symbols
    * @param {String} period
    */
-  hookWebSocketCandle(symbols, period = '1m') {
+  hookCandleEvent(symbols, period = '1m') {
 
     for (let webSocketEvent of Object.values(symbols)) {
       if (typeof webSocketEvent !== 'function') {
@@ -94,7 +91,7 @@ export default class BinanceApiDispatcher {
       }
     }
 
-    this.binanceApiCaller.websockets.candlesticks(Object.keys(symbols), period, candlesticks => {
+    this.caller.websockets.candlesticks(Object.keys(symbols), period, candlesticks => {
       const { e: eventType, E: eventTime, s: symbol, k: ticks } = candlesticks;
       const { o: open, h: high, l: low, c: close, v: volume, n: trades, i: interval, x: isFinal, q: quoteVolume, V: buyVolume, Q: quoteBuyVolume } = ticks;
 
@@ -125,8 +122,8 @@ export default class BinanceApiDispatcher {
    * Hooks a websocket(trade event).
    * @param {Object<symbol: tradeEvent>} symbols
    */
-  hookWebSocketTrade(symbols) {
-    this.binanceApiCaller.websockets.trades(Object.keys(symbols), trades => {
+  hookTradeEvent(symbols) {
+    this.caller.websockets.trades(Object.keys(symbols), trades => {
       let { e: eventType, E: eventTime, s: symbol, p: price, q: quantity, m: maker, a: tradeId } = trades;
 
       const _onCandlestick = symbols[symbol];
@@ -141,12 +138,5 @@ export default class BinanceApiDispatcher {
         tradeId: tradeId,
       });
     });
-  }
-
-  /**
-   * call delegate for binanceApiCaller
-   */
-  get caller() {
-    return this.binanceApiCaller;
   }
 }

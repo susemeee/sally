@@ -4,9 +4,12 @@ import BinanceApi from 'node-binance-api';
 
 import { TelegramBot } from './telegram/bot';
 import TelegramHandler from './telegram/handler';
-import BinanceApiDispatcher from './binance/api';
+import BinanceApiDispatcher from './traders/binance/api';
+import TradeBot from './tradebot';
 
 import * as config from '../config';
+
+import MACDAlgorithm from './algorithms/macd';
 
 /**
  * Bart Entrypoint
@@ -22,8 +25,20 @@ export async function run() {
   });
   const binance = new BinanceApiDispatcher(binanceApiCaller);
 
+  /**
+   * it uses macdalgorithm, firstly.
+   */
+  const algorithm = new MACDAlgorithm();
+  const tradeBot = new TradeBot('ETHBTC', algorithm, binance, telegramBot);
+  tradeBot.init();
+  tradeBot.startTrading();
+
+  let _stopping = false;
   process.on('SIGINT', () => {
+    if (_stopping) return;
+    _stopping = true;
     consola.warn('SIGINT');
     telegramBot.stopPolling();
+    tradeBot.stopTrading();
   });
-};
+}
