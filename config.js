@@ -1,12 +1,32 @@
 
-require('dotenv').config();
+import dotenv from 'dotenv';
+
+// loads .env
+dotenv.config();
 // loads api key
-require('dotenv').config({
+dotenv.config({
   path: require('path').join(__dirname, '.apikey'),
 });
 
-if (!process.env.BINANCE_API_KEY) {
-  throw new Error('You should provide Binance API Key via .apikey file.');
-}
-
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
+
+const {
+  TELEGRAM_BOT_TOKEN,
+  BINANCE_API_KEY,
+  BINANCE_API_SECRET,
+  // If you want to use sandbox mode where orders are simulated
+  BINANCE_API_TEST_MODE,
+} = {
+  // defaults
+  BINANCE_API_TEST_MODE: true,
+  // from env
+  ...process.env,
+};
+
+export {
+  TELEGRAM_BOT_TOKEN,
+  BINANCE_API_KEY,
+  BINANCE_API_SECRET,
+  BINANCE_API_TEST_MODE,
+};
