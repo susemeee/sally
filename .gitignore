@@ -71,3 +71,4 @@ typings/
 
 .apikey
 data/**/*
+__test.js
