@@ -30,7 +30,7 @@ export async function run() {
    */
   const algorithm = new MACDAlgorithm();
   const tradeBot = new TradeBot('ETHBTC', algorithm, binance, telegramBot);
-  tradeBot.init();
+  await tradeBot.init();
   tradeBot.startTrading();
 
   let _stopping = false;

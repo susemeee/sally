@@ -19,12 +19,14 @@ export default class Tradebot {
   }
 
   async init() {
-    const previousData = this.trader.getCandleHistory(this.symbol, this.algorithm.defaultCandlePeriod);
-    this.algorithm.fillDataWith(previousData);
+    const previousData = await this.trader.getCandleHistory(this.symbol, this.algorithm.defaultCandlePeriod);
+    this.algorithm.fillData(previousData);
   }
 
   startTrading() {
     consola.info('Trader: started.');
+
+    this.algorithm.determineSignal();
   }
 
   stopTrading() {
