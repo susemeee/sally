@@ -1,5 +1,8 @@
 import Algorithm from './algorithm';
 
+import consola from 'consola';
+import _ from 'lodash';
+
 export default class MACDAlgorithm extends Algorithm {
 
   constructor() {
@@ -9,21 +12,46 @@ export default class MACDAlgorithm extends Algorithm {
       outMACDSignal: [],
       outMACDHist: [],
     };
+
+    this.rsi = [];
+    this.roc240 = [];
+    this.roc480 = [];
+  }
+
+  _positiveCrossOver() {
+
   }
 
   async determineSignal() {
-    const { outMACD, outMACDSignal, outMACDHist } = await this.executeTALib('MACD', {
-      inReal: this.TALibData.close,
-      optInFastPeriod: 12,
-      optInSlowPeriod: 26,
-      optInSignalPeriod: 9,
-    });
+    super.determineSignal();
 
-    this.macd.outMACD.push(outMACD);
-    this.macd.outMACDSignal.push(outMACDSignal);
-    this.macd.outMACDHist.push(outMACDHist);
+    this.macd = {
+      ...await this.executeTALib('MACD', {
+        inReal: this.data.close,
+        optInFastPeriod: 12,
+        optInSlowPeriod: 26,
+        optInSignalPeriod: 9,
+      }),
+    };
 
-    // TODO:
+    this.rsi = (await this.executeTALib('RSI', {
+      inReal: this.data.close,
+      optInTimePeriod: 14,
+    })).outReal;
+
+    this.roc240 = (await this.executeTALib('ROC', {
+      inReal: this.data.close,
+      optInTimePeriod: 240,
+    })).outReal;
+
+    this.roc480 = (await this.executeTALib('ROC', {
+      inReal: this.data.close,
+      optInTimePeriod: 480,
+    })).outReal;
+
+    console.log('------------------------------------');
+    console.log(this.roc240.reverse());
+    console.log('------------------------------------');
   }
 
 }

@@ -8,25 +8,51 @@ export default class Algorithm {
   constructor() {
     this.defaultCandlePeriod = '15m';
     this.data = {
-      open: [/* { time: Date, val: Number } */],
-      high: [/* { time: Date, val: Number } */],
-      low: [/* { time: Date, val: Number } */],
-      close: [/* { time: Date, val: Number } */],
-      volume: [/* { time: Date, val: Number } */],
+      _time: [],
+      open: [],
+      high: [],
+      low: [],
+      close: [],
+      volume: [],
     };
+
+    this.isDataUpdated = false;
   }
 
+  /**
+   * Fills data from hookChartUpdate()
+   * @param {Object<key: Array>} arrayData { open: [], high: [], low: [], close: [] } ...
+   */
+  fillArrayData(arrayData) {
+
+    const _validKeys = d => Object.keys(d).filter(k => !k.startsWith('_')).sort();
+
+    if (!_.isEqual(_validKeys(arrayData), _validKeys(this.data))) {
+      throw new Error('fillArrayData: Data key integrity check failed.');
+    }
+
+    if (this.data.close.length !== arrayData.close.length) {
+      this.isDataUpdated = true;
+    }
+
+    this.data = arrayData;
+  }
+
+
+  /**
+   * Fills data from getCandleHistory()
+   * @param {Array<Object>} dataToAdd [ { time: ..., high: ..., low: ..., close: ... }, ... ]
+   */
   fillData(dataToAdd) {
     for (let [ key, data ] of Object.entries(this.data)) {
       data.push(...dataToAdd.map(d => {
-        return { time: d.time, val: parseFloat(d[key]) };
+        return parseFloat(d[key.startsWith('_') ? key.replace('_', '') : key]);
       }));
     }
+
+    this.isDataUpdated = true;
   }
 
-  get TALibData() {
-    return _.mapValues(this.data, (v) => _.orderBy(v, 't').map(v => v.val));
-  }
 
   /**
    * @returns Promise<TALibResult>
@@ -36,7 +62,7 @@ export default class Algorithm {
       const talibResult = await util.promisify(talib.execute)({
         name: name,
         startIdx: 0,
-        endIdx: this.data.close.length,
+        endIdx: this.data.close.length - 1,
         ...params,
       });
       return talibResult.result;
@@ -47,5 +73,7 @@ export default class Algorithm {
   }
 
   async determineSignal() {
+    // wait for next data update if signal is determined
+    this.isDataUpdated = false;
   }
 }
