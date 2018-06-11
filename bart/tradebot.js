@@ -16,20 +16,33 @@ export default class Tradebot {
     this.algorithm = algorithm;
     this.trader = trader;
     this.notifier = notifier;
+
+    this.logger = consola.withScope('Trader');
   }
 
   async init() {
-    const previousData = await this.trader.getCandleHistory(this.symbol, this.algorithm.defaultCandlePeriod);
-    this.algorithm.fillData(previousData);
+    // it is currently not needed
+    // const previousData = await this.trader.getCandleHistory(this.symbol, this.algorithm.defaultCandlePeriod);
+    // this.algorithm.fillData(previousData);
+  }
+
+  _onChartUpdate(chartAsArray) {
+    this.algorithm.fillArrayData(chartAsArray);
+    if (this.algorithm.isDataUpdated) {
+      this.logger.debug('Determining signal');
+      this.algorithm.determineSignal();
+    }
   }
 
   startTrading() {
-    consola.info('Trader: started.');
+    this.trader.hookChartUpdate(this.symbol, this.algorithm.defaultCandlePeriod, this._onChartUpdate.bind(this));
 
-    this.algorithm.determineSignal();
+    this.logger.debug('candleEvent hooked.');
+    this.logger.info('started.');
   }
 
   stopTrading() {
-    consola.info('Trader: stopped.');
+    this.trader.unhookFromEvents();
+    this.logger.info('stopped.');
   }
 }
