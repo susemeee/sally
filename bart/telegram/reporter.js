@@ -21,7 +21,7 @@ export default class TelegramReporter {
     let l = [this.formatTag(logObj)];
 
     if (logObj.scope) {
-      l.push(this.formatTag(logObj.scope));
+      l.push(`[${logObj.scope}]`);
     }
 
     l.push(logObj.message);
