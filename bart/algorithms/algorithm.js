@@ -1,11 +1,13 @@
 
 import talib from 'talib';
-
-import util from 'util';
+import consola from 'consola';
 import _ from 'lodash';
 
+import util from 'util';
+
 export default class Algorithm {
-  constructor() {
+  constructor(algorithmName) {
+    this.logger = consola.withScope(algorithmName);
     this.defaultCandlePeriod = '15m';
     this.data = {
       _time: [],
@@ -17,6 +19,30 @@ export default class Algorithm {
     };
 
     this.isDataUpdated = false;
+  }
+
+  _get(a, n) { return n >= 0 ? a[n] : a[a.length + n]; }
+  latest(a) { return this._get(a, -1); }
+  first(a) { return this._get(a, 1); }
+
+  _isPositiveCrossOver(da, db, n) {
+    if (this._get(da, -1) === this._get(db, -1)) {
+      if (this._get(da, -2) < this._get(da, -2)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  _isNegativeCrossOver(da, db, n) {
+    if (this._get(da, -1) === this._get(db, -1)) {
+      if (this._get(da, -2) > this._get(da, -2)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**

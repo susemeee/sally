@@ -6,7 +6,7 @@ import _ from 'lodash';
 export default class MACDAlgorithm extends Algorithm {
 
   constructor() {
-    super();
+    super('MACDAlgorithm');
     this.macd = {
       outMACD: [],
       outMACDSignal: [],
@@ -18,9 +18,6 @@ export default class MACDAlgorithm extends Algorithm {
     this.roc480 = [];
   }
 
-  _positiveCrossOver() {
-
-  }
 
   async determineSignal() {
     super.determineSignal();
@@ -49,9 +46,31 @@ export default class MACDAlgorithm extends Algorithm {
       optInTimePeriod: 480,
     })).outReal;
 
-    console.log('------------------------------------');
-    console.log(this.roc240.reverse());
-    console.log('------------------------------------');
+
+    // roc240 > 0
+    if (this.latest(this.roc240) > 0) {
+      // macd > 0
+      if (this.latest(this.macd.outMACD) > 0) {
+        // Or(rsi < 25, Crossover(macd, macd_signal)
+        if (
+          this._isPositiveCrossOver(this.macd.outMACD, this.macd.outMACDSignal) ||
+          this.latest(this.rsi) < 25
+        ) {
+          this.logger.info('Buy signal!');
+        }
+      }
+    }
+
+    this.logger.debug(`MACD: ${this.latest(this.macd.outMACD)}`);
+
+    if (this._isPositiveCrossOver(this.macd.outMACD, this.macd.outMACDSignal)) {
+      this.logger.debug('MACD Positive crossOver');
+    }
+
+    if (this._isNegativeCrossOver(this.macd.outMACD, this.macd.outMACDSignal)) {
+      this.logger.debug('MACD Negative crossOver');
+    }
+
   }
 
 }
