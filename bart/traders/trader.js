@@ -11,6 +11,9 @@ export default class Trader {
   async getCandleHistory() {
   }
 
+  hookChartUpdate(symbol, period = '1m', cb) {
+  }
+
   hookCandleEvent(symbols, period = '1m') {
   }
 
@@ -25,5 +28,8 @@ export default class Trader {
 
   get caller() {
     return this._caller;
+  }
+
+  unhookFromEvents() {
   }
 }

@@ -79,6 +79,21 @@ export default class BinanceApiDispatcher extends Trader {
 
 
   /**
+   * Hooks a websocket(chart event)
+   * @param {String} symbol
+   * @param {String} period
+   */
+  hookChartUpdate(symbol, period = '1m', cb) {
+    if (typeof cb !== 'function') {
+      throw new Error('hookChartUpdate: cb must be a function.');
+    }
+
+    this.caller.websockets.chart(symbol, period, (symbol, interval, chart) => {
+      cb(this.caller.ohlc(chart));
+    });
+  }
+
+  /**
    * Hooks a websocket(candle event).
    * @param {Object<symbol: tradeEvent>} symbols
    * @param {String} period
@@ -87,7 +102,7 @@ export default class BinanceApiDispatcher extends Trader {
 
     for (let webSocketEvent of Object.values(symbols)) {
       if (typeof webSocketEvent !== 'function') {
-        throw new Error('hookWebSocket: webSocketEvent must be a function.');
+        throw new Error('hookCandleEvent: webSocketEvent must be a function.');
       }
     }
 
@@ -123,6 +138,13 @@ export default class BinanceApiDispatcher extends Trader {
    * @param {Object<symbol: tradeEvent>} symbols
    */
   hookTradeEvent(symbols) {
+
+    for (let webSocketEvent of Object.values(symbols)) {
+      if (typeof webSocketEvent !== 'function') {
+        throw new Error('hookTradeEvent: webSocketEvent must be a function.');
+      }
+    }
+
     this.caller.websockets.trades(Object.keys(symbols), trades => {
       let { e: eventType, E: eventTime, s: symbol, p: price, q: quantity, m: maker, a: tradeId } = trades;
 
@@ -138,5 +160,12 @@ export default class BinanceApiDispatcher extends Trader {
         tradeId: tradeId,
       });
     });
+  }
+
+  unhookFromEvents() {
+    let endpoints = this.caller.websockets.subscriptions();
+    for ( let endpoint in endpoints ) {
+      this.caller.websockets.terminate(endpoint);
+    }
   }
 }
