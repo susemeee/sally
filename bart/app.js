@@ -10,12 +10,17 @@ import TradeBot from './tradebot';
 import * as config from '../config';
 
 import MACDAlgorithm from './algorithms/macd';
+import TelegramReporter from './telegram/reporter';
 
 /**
  * Bart Entrypoint
  */
 export async function run() {
   const telegramBot = new TelegramBot(config.TELEGRAM_BOT_TOKEN, TelegramHandler.handlers);
+
+  // Add consola reporter
+  const telegramReporter = new TelegramReporter(telegramBot);
+  consola.add(telegramReporter);
 
   const binanceApiCaller = new BinanceApi().options({
     APIKEY: config.BINANCE_API_KEY,
@@ -29,7 +34,7 @@ export async function run() {
    * it uses macdalgorithm, firstly.
    */
   const algorithm = new MACDAlgorithm();
-  const tradeBot = new TradeBot('ETHBTC', algorithm, binance, telegramBot);
+  const tradeBot = new TradeBot(config.TRADING_SECURITY_SYMBOL, algorithm, binance, telegramBot);
   await tradeBot.init();
   tradeBot.startTrading();
 

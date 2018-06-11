@@ -5,6 +5,7 @@ import fs from 'fs';
 import TelegramBotApi from 'node-telegram-bot-api';
 import consola from 'consola';
 
+import * as config from '../../config';
 export class TelegramBot {
 
   static SUBSCRIBERS_PATH = path.join(process.cwd(), 'data', 'subscribers.json');
@@ -84,15 +85,20 @@ export class TelegramBot {
     return 'WIP';
   }
 
-  sendTo(to, message) {
-    if (!this.initialized) return consola.info(message);
+  sendToAdmin(message) {
+    if (!config.TELEGRAM_BOT_ADMIN_ID) throw new Error('no TELEGRAM_BOT_ADMIN_ID');
 
+    if (!this.initialized) return console.log(message);
+    this.bot.sendMessage(config.TELEGRAM_BOT_ADMIN_ID, message);
+  }
+
+  sendTo(to, message) {
+    if (!this.initialized) return console.log(message);
     this.bot.sendMessage(to, message);
   }
 
   broadcast(message) {
-    if (!this.initialized) return consola.info(message);
-
+    if (!this.initialized) return console.log(message);
     for (let subscriber of this.data.subscribers) {
       this.bot.sendMessage(subscriber, message);
     }
