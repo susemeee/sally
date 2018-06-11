@@ -19,8 +19,11 @@ export async function run() {
   const telegramBot = new TelegramBot(config.TELEGRAM_BOT_TOKEN, TelegramHandler.handlers);
 
   // Add consola reporter
-  const telegramReporter = new TelegramReporter(telegramBot);
-  consola.add(telegramReporter);
+  consola.level = config.LOG_LEVEL;
+  if (config.LOG_TO_TELEGRAM) {
+    const telegramReporter = new TelegramReporter(telegramBot);
+    consola.add(telegramReporter);
+  }
 
   const binanceApiCaller = new BinanceApi().options({
     APIKEY: config.BINANCE_API_KEY,
@@ -38,12 +41,23 @@ export async function run() {
   await tradeBot.init();
   tradeBot.startTrading();
 
+
   let _stopping = false;
-  process.on('SIGINT', () => {
+  const _onExit = () => {
     if (_stopping) return;
     _stopping = true;
-    consola.warn('SIGINT');
-    telegramBot.stopPolling();
     tradeBot.stopTrading();
+    telegramBot.stopPolling();
+  };
+
+  process.on('SIGINT', () => {
+    consola.warn('SIGINT');
+    _onExit();
   });
+
+  process.on('exit', () => {
+    consola.warn('exit');
+    _onExit();
+  });
+
 }
