@@ -1,8 +1,9 @@
 
 import consola from 'consola';
-import Algorithm from './algorithms/algorithm';
+import MACDAlgorithm from './algorithms/macd';
 import Trader from './traders/trader';
 import Plotter from './plotter/plotter';
+import { TelegramBot } from './telegram/bot';
 
 import path from 'path';
 
@@ -10,9 +11,9 @@ export default class Tradebot {
 
   /**
    * @param {String} symbol
-   * @param {Algorithm} algorithm
+   * @param {MACDAlgorithm} algorithm
    * @param {Trader} trader
-   * @param {Telegram} notifier
+   * @param {TelegramBot} notifier
    * @param {Plotter} plotter
    */
   constructor(symbol, algorithm, trader, notifier, plotter) {
@@ -31,8 +32,8 @@ export default class Tradebot {
     // this.algorithm.fillData(previousData);
   }
 
-  async plotData() {
-    await this.plotter.renderData((roc240, roc480, macd, macdSignal, macdHistogram, rsi, ohlc) => {
+  async plotData(maxShowRange, screenshotPath) {
+    await this.plotter.renderData((maxShowRange, roc240, roc480, macd, macdSignal, macdHistogram, rsi, ohlc) => {
 
       const _zeroFilledArray = n => Array(...Array(n)).map(a => 0);
       const _padLeft = (array, n) => _zeroFilledArray(n).concat(...array);
@@ -93,22 +94,32 @@ export default class Tradebot {
         }, ohlc),
       ];
 
+      const rangeToShow = [dataLen - maxShowRange, dataLen];
+      const ohlcYrange = [ Math.min(...ohlc.low.slice(...rangeToShow)), Math.max(...ohlc.high.slice(...rangeToShow)) /* TODO: find a better way. */ ];
+
       const layout = {
         title: this.symbol,
+        xaxis: { range: rangeToShow },
         yaxis: { domain: [0, 0.15] },
         legend: { traceorder: 'reversed' },
-        xaxis2: { anchor: 'y2' },
+        xaxis2: { anchor: 'y2', range: rangeToShow },
         yaxis2: { domain: [0.2, 0.35] },
-        xaxis3: { anchor: 'y3' },
+        xaxis3: { anchor: 'y3', range: rangeToShow },
         yaxis3: { domain: [0.4, 0.55] },
-        xaxis4: { anchor: 'y4', rangeslider: { visible: false } },
-        yaxis4: { domain: [0.6, 1] },
-
+        xaxis4: { anchor: 'y4', range: rangeToShow, rangeslider: { visible: false } },
+        yaxis4: { domain: [0.6, 1], dtick: 0.5, range: ohlcYrange },
+        margin: {
+          autoexpand: true,
+          l: 50,
+          r: 0,
+          t: 0,
+        },
       };
 
       Plotly.newPlot('plot', data, layout);
 
     }, [
+      maxShowRange,
       this.algorithm.roc240,
       this.algorithm.roc480,
       this.algorithm.macd.outMACD,
@@ -116,7 +127,7 @@ export default class Tradebot {
       this.algorithm.macd.outMACDHist,
       this.algorithm.rsi,
       this.algorithm.data
-    ], path.join('data', `screenshot_${new Date().toISOString().replace(/:/g, '')}.png`));
+    ], screenshotPath);
   }
 
   async _onChartUpdate(chartAsArray) {
@@ -124,7 +135,11 @@ export default class Tradebot {
     if (this.algorithm.isDataUpdated) {
       this.logger.debug('Determining signal');
       await this.algorithm.determineSignal();
-      await this.plotData();
+
+      const _screenshotPath = path.join('data', `screenshot_${new Date().toISOString().replace(/:/g, '')}.png`);
+      await this.plotData(200, _screenshotPath);
+
+      this.notifier.sendImage(this.notifier.adminId, _screenshotPath, this.symbol);
     }
   }
 
