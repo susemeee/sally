@@ -17,7 +17,7 @@ export default class Plotter {
   get VIEWPORT() {
     return {
       width: 1280,
-      height: 800,
+      height: 960,
       deviceScaleFactor: 2,
     };
   }
