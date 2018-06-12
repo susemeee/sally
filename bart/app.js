@@ -11,6 +11,7 @@ import * as config from '../config';
 
 import MACDAlgorithm from './algorithms/macd';
 import TelegramReporter from './telegram/reporter';
+import Plotter from './plotter/plotter';
 
 /**
  * Bart Entrypoint
@@ -33,11 +34,13 @@ export async function run() {
   });
   const binance = new BinanceApiDispatcher(binanceApiCaller);
 
+  const plotter = new Plotter();
+
   /**
    * it uses macdalgorithm, firstly.
    */
   const algorithm = new MACDAlgorithm();
-  const tradeBot = new TradeBot(config.TRADING_SECURITY_SYMBOL, algorithm, binance, telegramBot);
+  const tradeBot = new TradeBot(config.TRADING_SECURITY_SYMBOL, algorithm, binance, telegramBot, plotter);
   await tradeBot.init();
   tradeBot.startTrading();
 
