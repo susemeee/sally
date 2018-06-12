@@ -23,9 +23,11 @@ export default class Plotter {
   }
 
   async initRenderer(headless = true) {
-    this.browser = await puppeteer.launch({
-      headless: headless
-    });
+    if (!this.browser) {
+      this.browser = await puppeteer.launch({
+        headless: headless
+      });
+    }
     this.page = await this.browser.newPage();
 
     // logging page error
@@ -37,8 +39,6 @@ export default class Plotter {
 
   async closeRenderer() {
     await this.page.close();
-    // TODO: re-using browser
-    await this.browser.close();
   }
 
   _getDataUri(html) {
