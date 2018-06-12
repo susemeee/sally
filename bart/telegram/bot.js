@@ -82,10 +82,6 @@ export class TelegramBot {
     });
   }
 
-  _onFetchRequest(currency) {
-    return 'WIP';
-  }
-
   get adminId() {
     if (!config.TELEGRAM_BOT_ADMIN_ID) throw new Error('no TELEGRAM_BOT_ADMIN_ID');
     return config.TELEGRAM_BOT_ADMIN_ID;

@@ -2,6 +2,8 @@
 import _ from 'lodash';
 import consola from 'consola';
 
+import Tradebot from '../tradebot';
+
 class Handler {
 
   static _handlers = [];
@@ -39,16 +41,33 @@ export default class TelegramHandler extends Handler {
     this.bot.sendMessage(chat.id, 'unsubscribed.');
   }
 
-  @Handler.onText(/\/(fetch|f) (.+)/)
+  @Handler.onText(/\/(fetch|f) ([^\s]+) ?(\d+)?/)
   async onFetchRequest({ chat }, match) {
 
-    const currency = match[2];
-    const response = await this._onFetchRequest(currency);
-    if (!response) {
-      this.bot.sendMessage(chat.id, `Invalid request: ${currency}.`);
-    } else {
-      this.bot.sendMessage(chat.id, response);
-    }
+    const currency = (match[2] || '').toUpperCase();
+    const n = match[3];
+
+    new Promise((resolve, reject) => {
+
+      Tradebot.EVENT_BUS.emit(Tradebot.EVENT_FETCH_REQUEST, {
+        currency: currency,
+        n: n,
+      });
+
+      Tradebot.EVENT_BUS.once(Tradebot.EVENT_FETCH_RESPONSE, (err, response) => {
+        if (err) return reject(err);
+        return resolve(response.screenshotPath);
+      });
+
+    })
+    .then(screenshotPath => {
+      this.sendImage(chat.id, screenshotPath, currency);
+    })
+    .catch(err => {
+      consola.error(err);
+      this.bot.sendMessage(chat.id, `Fetch error. ${currency}.`);
+    });
+
   }
 
   @Handler.onText(/\/ping/)

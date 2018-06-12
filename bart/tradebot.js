@@ -6,6 +6,7 @@ import Plotter from './plotter/plotter';
 import { TelegramBot } from './telegram/bot';
 
 import path from 'path';
+import { EventEmitter } from 'events';
 
 export default class Tradebot {
 
@@ -26,13 +27,36 @@ export default class Tradebot {
     this.logger = consola.withScope('Trader');
   }
 
+  static EVENT_BUS = new EventEmitter();
+  static EVENT_FETCH_REQUEST = 'fetchRequest';
+  static EVENT_FETCH_RESPONSE = 'fetchResponse';
+
   async init() {
-    // it is currently not needed
-    // const previousData = await this.trader.getCandleHistory(this.symbol, this.algorithm.defaultCandlePeriod);
-    // this.algorithm.fillData(previousData);
+    Tradebot.EVENT_BUS.on(Tradebot.EVENT_FETCH_REQUEST, async ({ currency, n } = {}) => {
+
+      try {
+        // plotter needs an algorithm and data structure
+        const _dummyAlgorithm = new MACDAlgorithm();
+        const _candlesticks = await this.trader.getCandleHistory(currency, _dummyAlgorithm.defaultCandlePeriod, n);
+
+        _dummyAlgorithm.fillData(_candlesticks);
+
+        const _screenshotPath = path.join('data', `screenshot_${new Date().toISOString().replace(/:/g, '')}.png`);
+        await _dummyAlgorithm.initializeIndicators();
+        await this.plotData(_dummyAlgorithm, n, _screenshotPath);
+
+        // sends back response
+        Tradebot.EVENT_BUS.emit(Tradebot.EVENT_FETCH_RESPONSE, null, {
+          screenshotPath: _screenshotPath,
+        });
+      } catch (err) {
+        Tradebot.EVENT_BUS.emit(Tradebot.EVENT_FETCH_RESPONSE, err);
+      }
+
+    });
   }
 
-  async plotData(maxShowRange, screenshotPath) {
+  async plotData(algorithm, maxShowRange, screenshotPath) {
     await this.plotter.renderData((maxShowRange, roc240, roc480, macd, macdSignal, macdHistogram, rsi, ohlc) => {
 
       const _zeroFilledArray = n => Array(...Array(n)).map(a => 0);
@@ -107,7 +131,7 @@ export default class Tradebot {
         xaxis3: { anchor: 'y3', range: rangeToShow },
         yaxis3: { domain: [0.4, 0.55] },
         xaxis4: { anchor: 'y4', range: rangeToShow, rangeslider: { visible: false } },
-        yaxis4: { domain: [0.6, 1], dtick: 0.5, range: ohlcYrange },
+        yaxis4: { domain: [0.6, 1], dtick: Math.round(ohlcYrange[1] / 30), range: ohlcYrange },
         margin: {
           autoexpand: true,
           l: 50,
@@ -120,13 +144,13 @@ export default class Tradebot {
 
     }, [
       maxShowRange,
-      this.algorithm.roc240,
-      this.algorithm.roc480,
-      this.algorithm.macd.outMACD,
-      this.algorithm.macd.outMACDSignal,
-      this.algorithm.macd.outMACDHist,
-      this.algorithm.rsi,
-      this.algorithm.data
+      algorithm.roc240,
+      algorithm.roc480,
+      algorithm.macd.outMACD,
+      algorithm.macd.outMACDSignal,
+      algorithm.macd.outMACDHist,
+      algorithm.rsi,
+      algorithm.data
     ], screenshotPath);
   }
 
@@ -136,8 +160,9 @@ export default class Tradebot {
       this.logger.debug('Determining signal');
       await this.algorithm.determineSignal();
 
+      // making report
       const _screenshotPath = path.join('data', `screenshot_${new Date().toISOString().replace(/:/g, '')}.png`);
-      await this.plotData(200, _screenshotPath);
+      await this.plotData(this.algorithm, 200, _screenshotPath);
 
       this.notifier.sendImage(this.notifier.adminId, _screenshotPath, this.symbol);
     }
