@@ -72,3 +72,5 @@ typings/
 .apikey
 data/**/*
 __test.js
+**/.DS_Store
+**/screenshot.png
