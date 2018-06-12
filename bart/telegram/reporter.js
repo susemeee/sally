@@ -30,7 +30,7 @@ export default class TelegramReporter {
       l.push(logObj.additional);
     }
 
-    this.telegramBot.sendToAdmin(l.join(' '));
+    this.telegramBot.sendTo(this.telegramBot.adminId, l.join(' '));
 
   }
 }

@@ -4,6 +4,7 @@ import fs from 'fs';
 
 import TelegramBotApi from 'node-telegram-bot-api';
 import consola from 'consola';
+import mime from 'mime';
 
 import * as config from '../../config';
 export class TelegramBot {
@@ -85,23 +86,34 @@ export class TelegramBot {
     return 'WIP';
   }
 
-  sendToAdmin(message) {
+  get adminId() {
     if (!config.TELEGRAM_BOT_ADMIN_ID) throw new Error('no TELEGRAM_BOT_ADMIN_ID');
-
-    if (!this.initialized) return console.log(message);
-    this.bot.sendMessage(config.TELEGRAM_BOT_ADMIN_ID, message);
+    return config.TELEGRAM_BOT_ADMIN_ID;
   }
 
-  sendTo(to, message) {
+  async sendTo(to, message) {
     if (!this.initialized) return console.log(message);
-    this.bot.sendMessage(to, message);
+    return this.bot.sendMessage(to, message);
   }
 
-  broadcast(message) {
+  async sendImage(to, imagePath, caption) {
+    if (!this.initialized) return console.log(imagePath);
+
+    await this.bot.sendChatAction(to, 'upload_photo');
+    return this.bot.sendPhoto(to, imagePath, {
+      caption: caption,
+    }, {
+      filename: path.basename(imagePath),
+      contentType: mime.getType(imagePath),
+    });
+  }
+
+  async broadcast(message) {
     if (!this.initialized) return console.log(message);
-    for (let subscriber of this.data.subscribers) {
-      this.bot.sendMessage(subscriber, message);
-    }
+
+    return this.data.subscribers.map(subscriber => {
+      return this.bot.sendMessage(subscriber, message);
+    });
   }
 
 }
