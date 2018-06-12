@@ -99,6 +99,10 @@ export default class Algorithm {
     }
   }
 
+  async initializeIndicators() {
+
+  }
+
   async determineSignal() {
     // wait for next data update if signal is determined
     this.isDataUpdated = false;

@@ -18,10 +18,7 @@ export default class MACDAlgorithm extends Algorithm {
     this.roc480 = [];
   }
 
-
-  async determineSignal() {
-    super.determineSignal();
-
+  async initializeIndicators() {
     this.macd = {
       ...await this.executeTALib('MACD', {
         inReal: this.data.close,
@@ -45,7 +42,12 @@ export default class MACDAlgorithm extends Algorithm {
       inReal: this.data.close,
       optInTimePeriod: 480,
     })).outReal;
+  }
 
+  async determineSignal() {
+    super.determineSignal();
+
+    await this.initializeIndicators();
 
     // roc240 > 0
     if (this.latest(this.roc240) > 0) {
