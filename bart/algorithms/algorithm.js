@@ -26,7 +26,7 @@ export default class Algorithm {
   first(a) { return this._get(a, 1); }
 
   _isPositiveCrossOver(da, db, n) {
-    if (this._get(da, -1) === this._get(db, -1)) {
+    if (this._get(da, -1) > this._get(db, -1)) {
       if (this._get(da, -2) < this._get(da, -2)) {
         return true;
       }
@@ -36,7 +36,7 @@ export default class Algorithm {
   }
 
   _isNegativeCrossOver(da, db, n) {
-    if (this._get(da, -1) === this._get(db, -1)) {
+    if (this._get(da, -1) < this._get(db, -1)) {
       if (this._get(da, -2) > this._get(da, -2)) {
         return true;
       }
@@ -59,6 +59,7 @@ export default class Algorithm {
 
     if (this.data.close.length !== arrayData.close.length) {
       this.isDataUpdated = true;
+      consola.debug('isDataUpdated -> true');
     }
 
     this.data = arrayData;

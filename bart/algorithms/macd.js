@@ -62,6 +62,8 @@ export default class MACDAlgorithm extends Algorithm {
     }
 
     this.logger.debug(`MACD: ${this.latest(this.macd.outMACD)}`);
+    this.logger.debug(`ROC-240: ${this.latest(this.roc240)}`);
+    this.logger.debug(`RSI: ${this.latest(this.rsi)}`);
 
     if (this._isPositiveCrossOver(this.macd.outMACD, this.macd.outMACDSignal)) {
       this.logger.debug('MACD Positive crossOver');
