@@ -23,6 +23,8 @@
     "lodash": "^4.17.10",
     "node-binance-api": "^0.7.1",
     "node-telegram-bot-api": "^0.30.0",
+    "plotly.js": "^1.38.3",
+    "puppeteer": "^1.5.0",
     "talib": "^1.0.5"
   },
   "devDependencies": {
