@@ -18,6 +18,9 @@ export default class Tradebot {
    * @param {Plotter} plotter
    */
   constructor(symbol, algorithm, trader, notifier, plotter) {
+
+    if (!this.symbol) throw new Error('You must give a symbol.');
+
     this.symbol = symbol;
     this.algorithm = algorithm;
     this.trader = trader;
