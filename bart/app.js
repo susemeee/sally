@@ -1,4 +1,7 @@
 
+import fs from 'fs';
+import path from 'path';
+
 import consola from 'consola';
 import BinanceApi from 'node-binance-api';
 
@@ -17,6 +20,13 @@ import Plotter from './plotter/plotter';
  * Bart Entrypoint
  */
 export async function run() {
+
+  const _path = path.join(process.cwd(), 'data');
+  if (fs.existsSync(_path)) {
+    consola.debug('Making a data folder');
+    fs.mkdirSync(_path);
+  }
+
   const telegramBot = new TelegramBot(config.TELEGRAM_BOT_TOKEN, TelegramHandler.handlers);
 
   // Add consola reporter
