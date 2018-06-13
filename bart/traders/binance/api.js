@@ -2,6 +2,7 @@
 import util from 'util';
 import Trader from '../trader';
 
+
 export default class BinanceApiDispatcher extends Trader {
 
   static CANDLESTICK_FETCH_COUNT = 500;
@@ -38,7 +39,8 @@ export default class BinanceApiDispatcher extends Trader {
 
     return new Promise((resolve, reject) => {
       this.caller.candlesticks(symbol, period, (err, ticks, symbol) => {
-        if (err) reject(err);
+        if (err) return reject(err);
+        if (!ticks || !ticks.length) return reject(new Error('Ticks is empty'));
 
         const convertedTicks = ticks.map(tick => {
           return KEYS.reduce((tickObj, key, i) => {
