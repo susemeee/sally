@@ -17,7 +17,7 @@ import TelegramReporter from './telegram/reporter';
 import Plotter from './plotter/plotter';
 
 /**
- * Bart Entrypoint
+ * Sally Entrypoint
  */
 export async function run() {
 

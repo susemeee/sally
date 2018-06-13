@@ -1,6 +1,6 @@
 
 import BinanceApi from 'node-binance-api';
-import BinanceApiDispatcher from '../bart/binance/api';
+import BinanceApiDispatcher from '../sally/binance/api';
 
 import * as config from '../config';
 

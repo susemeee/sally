@@ -1,5 +1,5 @@
 {
-  "name": "bart",
+  "name": "sally",
   "version": "1.0.0",
   "description": "Binance Automated Rapid Trader",
   "main": "index.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/susemeee/bart.git"
+    "url": "git+https://github.com/susemeee/sally.git"
   },
   "author": "Suho Lee",
   "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/susemeee/bart/issues"
+    "url": "https://github.com/susemeee/sally/issues"
   },
-  "homepage": "https://github.com/susemeee/bart#readme",
+  "homepage": "https://github.com/susemeee/sally#readme",
   "dependencies": {
     "consola": "^1.4.1",
     "dotenv": "^6.0.0",
