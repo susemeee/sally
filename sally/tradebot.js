@@ -36,7 +36,7 @@ export default class Tradebot {
 
   async init() {
     // registering an event listeners
-    Tradebot.EVENT_BUS.on(Tradebot.EVENT_FETCH_REQUEST, async ({ currency, period, n } = {}) => {
+    Tradebot.EVENT_BUS.on(Tradebot.EVENT_FETCH_REQUEST, async ({ currency, period, n = 200 } = {}) => {
 
       try {
         // plotter needs an algorithm and data structure
