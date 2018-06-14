@@ -41,7 +41,7 @@ export default class Tradebot {
       try {
         // plotter needs an algorithm and data structure
         const _dummyAlgorithm = new MACDAlgorithm();
-        const _candlesticks = await this.trader.getCandleHistory(currency, period || _dummyAlgorithm.defaultCandlePeriod, n);
+        const _candlesticks = await this.trader.getCandleHistory(currency, period || _dummyAlgorithm.defaultCandlePeriod, n + _dummyAlgorithm.DATA_COUNT_TO_PREFILL_INDICATORS);
 
         _dummyAlgorithm.fillData(_candlesticks);
 

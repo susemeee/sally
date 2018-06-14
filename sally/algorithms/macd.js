@@ -93,4 +93,8 @@ export default class MACDAlgorithm extends Algorithm {
 
   }
 
+  get DATA_COUNT_TO_PREFILL_INDICATORS() {
+    // 12, 26 + 9, 14, lcm(5, 2)
+    return 35;
+  }
 }

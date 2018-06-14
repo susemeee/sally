@@ -107,4 +107,12 @@ export default class Algorithm {
     // wait for next data update if signal is determined
     this.isDataUpdated = false;
   }
+
+  /**
+   * if /fetch command is issued, some indicators might results in zero if no extra data is given.
+   * the count of DATA_COUNT_TO_PREFILL_INDICATORS prevents indicators results in zero.
+   */
+  get DATA_COUNT_TO_PREFILL_INDICATORS() {
+    return 0;
+  }
 }
