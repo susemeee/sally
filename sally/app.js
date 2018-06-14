@@ -22,7 +22,7 @@ import Plotter from './plotter/plotter';
 export async function run() {
 
   const _path = path.join(process.cwd(), 'data');
-  if (fs.existsSync(_path)) {
+  if (!fs.existsSync(_path)) {
     consola.debug('Making a data folder');
     fs.mkdirSync(_path);
   }
