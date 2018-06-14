@@ -16,6 +16,11 @@ export default class MACDAlgorithm extends Algorithm {
     this.rsi = [];
     this.roc240 = [];
     this.roc480 = [];
+    this.bbands = {
+      outRealUpperBand: [],
+      outRealMiddleBand: [],
+      outRealLowerBand: [],
+    };
   }
 
   async initializeIndicators() {
@@ -42,6 +47,17 @@ export default class MACDAlgorithm extends Algorithm {
       inReal: this.data.close,
       optInTimePeriod: 480,
     })).outReal;
+
+    this.bbands = {
+      ...await this.executeTALib('BBANDS', {
+        inReal: this.data.close,
+        optInTimePeriod: 5,
+        optInNbDevUp: 2,
+        optInNbDevDn: 2,
+        // TODO:?
+        optInMAType: 0,
+      }),
+    };
   }
 
   async determineSignal() {
