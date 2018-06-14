@@ -4,6 +4,7 @@ import consola from 'consola';
 
 import fs from 'fs';
 import path from 'path';
+import util from 'util';
 
 export default class Plotter {
 
@@ -55,6 +56,14 @@ export default class Plotter {
     });
 
     await this.closeRenderer();
+  }
+
+  async removeScreenshot(screenshotPath) {
+    try {
+      await util.promisify(fs.unlink)(screenshotPath);
+    } catch (err) {
+      consola.error(err);
+    }
   }
 
 }

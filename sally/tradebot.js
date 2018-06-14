@@ -165,11 +165,12 @@ export default class Tradebot {
       this.logger.debug('Determining signal');
       await this.algorithm.determineSignal();
 
-      // making report
+      // making a report
       const _screenshotPath = path.join('data', `screenshot_${new Date().toISOString().replace(/:/g, '')}.png`);
-      await this.plotData(this.algorithm, 100, _screenshotPath);
 
-      this.notifier.sendImage(this.notifier.adminId, _screenshotPath, this.symbol);
+      await this.plotData(this.algorithm, 100, _screenshotPath);
+      await this.notifier.sendImage(this.notifier.adminId, _screenshotPath, this.symbol);
+      await this.plotter.removeScreenshot(_screenshotPath);
     }
   }
 
