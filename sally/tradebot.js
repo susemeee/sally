@@ -167,7 +167,7 @@ export default class Tradebot {
 
       // making report
       const _screenshotPath = path.join('data', `screenshot_${new Date().toISOString().replace(/:/g, '')}.png`);
-      await this.plotData(this.algorithm, 200, _screenshotPath);
+      await this.plotData(this.algorithm, 100, _screenshotPath);
 
       this.notifier.sendImage(this.notifier.adminId, _screenshotPath, this.symbol);
     }
