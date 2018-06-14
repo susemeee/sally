@@ -67,11 +67,12 @@ export default class Tradebot {
       const _padLeft = (array, n) => _zeroFilledArray(n).concat(...array);
 
       const dataLen = ohlc.close.length;
+      const xaxis = [...Array(dataLen).keys()];
 
       const data = [
         // candle
         Object.assign({
-          x: [...Array(dataLen).keys()],
+          x: xaxis,
           xaxis: 'x4',
           yaxis: 'y4',
           type: 'candlestick',
@@ -79,14 +80,14 @@ export default class Tradebot {
         }, ohlc),
         // rsi
         {
-          x: [...Array(dataLen).keys()],
+          x: xaxis,
           y: _padLeft(rsi, dataLen - rsi.length),
           type: 'scatter',
           name: 'rsi',
         },
         // macd
         {
-          x: [...Array(dataLen).keys()],
+          x: xaxis,
           y: _padLeft(macd, dataLen - macd.length),
           xaxis: 'x2',
           yaxis: 'y2',
@@ -94,7 +95,7 @@ export default class Tradebot {
           name: 'macd',
         },
         {
-          x: [...Array(dataLen).keys()],
+          x: xaxis,
           y: _padLeft(macdSignal, dataLen - macdSignal.length),
           xaxis: 'x2',
           yaxis: 'y2',
@@ -102,7 +103,7 @@ export default class Tradebot {
           name: 'macdSignal',
         },
         {
-          x: [...Array(dataLen).keys()],
+          x: xaxis,
           y: _padLeft(macdHistogram, dataLen - macdHistogram.length),
           xaxis: 'x2',
           yaxis: 'y2',
@@ -114,7 +115,7 @@ export default class Tradebot {
         },
         // volume
         {
-          x: ohlc._time,
+          x: xaxis,
           y: ohlc.volume,
           xaxis: 'x3',
           yaxis: 'y3',
@@ -126,7 +127,7 @@ export default class Tradebot {
         },
         // BBands
         {
-          x: [...Array(dataLen).keys()],
+          x: xaxis,
           y: _padLeft(bbandHigh, dataLen - bbandHigh.length),
           xaxis: 'x4',
           yaxis: 'y4',
@@ -135,7 +136,7 @@ export default class Tradebot {
           line: { color: 'rgba(100,100,100,0.5)' },
         },
         {
-          x: [...Array(dataLen).keys()],
+          x: xaxis,
           y: _padLeft(bbandLow, dataLen - bbandLow.length),
           xaxis: 'x4',
           yaxis: 'y4',
@@ -144,7 +145,7 @@ export default class Tradebot {
           line: { color: 'rgba(100,100,100,0.5)' },
         },
         {
-          x: [...Array(dataLen).keys()],
+          x: xaxis,
           y: _padLeft(bbandLine, dataLen - bbandLine.length),
           xaxis: 'x4',
           yaxis: 'y4',
