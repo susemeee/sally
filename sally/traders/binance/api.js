@@ -21,7 +21,7 @@ export default class BinanceApiDispatcher extends Trader {
    * @param {Number} period
    * @param {Date} endTime
    */
-  _getCandlesticks(symbol, period, endTime) {
+  _getCandlesticks(symbol, period, endTime, n = BinanceApiDispatcher.CANDLESTICK_FETCH_COUNT) {
     const KEYS = [
       'time',
       'open',
@@ -50,8 +50,8 @@ export default class BinanceApiDispatcher extends Trader {
         });
 
         return resolve(convertedTicks);
-      });
-    }, { limit: BinanceApiDispatcher.CANDLESTICK_FETCH_COUNT, endTime: endTime });
+      }, { limit: n, endTime: endTime });
+    });
   }
 
   /**
@@ -60,16 +60,21 @@ export default class BinanceApiDispatcher extends Trader {
    * @param {Number} period
    * @param {Date} endTime
    */
-  async getCandleHistory(symbol, period, n = 500, endTime = Date.now()) {
+  async getCandleHistory(symbol, period, n = 400, endTime = Date.now()) {
     const _candlesticks = [];
     let _endTime = endTime;
     let _n = n;
 
     try {
-      while (_n > 0) {
-        _candlesticks.unshift(...(await this._getCandlesticks(symbol, period, _endTime)));
-        _n -= BinanceApiDispatcher.CANDLESTICK_FETCH_COUNT;
-        _endTime = _candlesticks[0].time;
+
+      if (n < BinanceApiDispatcher.CANDLESTICK_FETCH_COUNT) {
+        _candlesticks.unshift(...(await this._getCandlesticks(symbol, period, _endTime, n)));
+      } else {
+        while (_n > 0) {
+          _candlesticks.unshift(...(await this._getCandlesticks(symbol, period, _endTime)));
+          _n -= BinanceApiDispatcher.CANDLESTICK_FETCH_COUNT;
+          _endTime = _candlesticks[0].time;
+        }
       }
 
       return _candlesticks;

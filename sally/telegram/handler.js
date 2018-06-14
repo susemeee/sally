@@ -41,17 +41,25 @@ export default class TelegramHandler extends Handler {
     this.bot.sendMessage(chat.id, 'unsubscribed.');
   }
 
-  @Handler.onText(/\/(fetch|f) ([^\s]+) ?(\d+)?/)
+  @Handler.onText(/\/(fetch|f) ?([^\s]+)? ?(\d+[dwhm]{1})?\-?(\d+)?/)
   async onFetchRequest({ chat }, match) {
 
-    const currency = (match[2] || '').toUpperCase();
-    const n = match[3];
+    const [ m, f, currency, period, n ] = match;
+
+    if (!m || !f || !currency) {
+      return this.bot.sendMessage(chat.id, 'Usage: /fetch eosbtc 4h-200 or /fetch eosbtc 15m ...');
+    }
+
+    if (n && Number(n) > 500) {
+      return this.bot.sendMessage(chat.id, 'Getting More than 500 candle is not supported.');
+    }
 
     new Promise((resolve, reject) => {
 
       Tradebot.EVENT_BUS.emit(Tradebot.EVENT_FETCH_REQUEST, {
-        currency: currency,
-        n: n,
+        currency: currency.toUpperCase(),
+        period: period,
+        n: Number(n) || undefined,
       });
 
       Tradebot.EVENT_BUS.once(Tradebot.EVENT_FETCH_RESPONSE, (err, response) => {

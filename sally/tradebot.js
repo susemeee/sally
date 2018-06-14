@@ -19,7 +19,7 @@ export default class Tradebot {
    */
   constructor(symbol, algorithm, trader, notifier, plotter) {
 
-    if (!this.symbol) throw new Error('You must give a symbol.');
+    if (!symbol) throw new Error('You must give a symbol.');
 
     this.symbol = symbol;
     this.algorithm = algorithm;
@@ -35,12 +35,12 @@ export default class Tradebot {
   static EVENT_FETCH_RESPONSE = 'fetchResponse';
 
   async init() {
-    Tradebot.EVENT_BUS.on(Tradebot.EVENT_FETCH_REQUEST, async ({ currency, n } = {}) => {
+    Tradebot.EVENT_BUS.on(Tradebot.EVENT_FETCH_REQUEST, async ({ currency, period, n } = {}) => {
 
       try {
         // plotter needs an algorithm and data structure
         const _dummyAlgorithm = new MACDAlgorithm();
-        const _candlesticks = await this.trader.getCandleHistory(currency, _dummyAlgorithm.defaultCandlePeriod, n);
+        const _candlesticks = await this.trader.getCandleHistory(currency, period || _dummyAlgorithm.defaultCandlePeriod, n);
 
         _dummyAlgorithm.fillData(_candlesticks);
 
@@ -121,8 +121,10 @@ export default class Tradebot {
         }, ohlc),
       ];
 
-      const rangeToShow = [dataLen - maxShowRange, dataLen];
-      const ohlcYrange = [ Math.min(...ohlc.low.slice(...rangeToShow)), Math.max(...ohlc.high.slice(...rangeToShow)) /* TODO: find a better way. */ ];
+      const rangeToShow = dataLen > maxShowRange ? [ dataLen - maxShowRange, dataLen ] : undefined;
+      const ohlcYrange = rangeToShow ?
+        [ Math.min(...ohlc.low.slice(...rangeToShow)), Math.max(...ohlc.high.slice(...rangeToShow)) /* TODO: find a better way. */ ] :
+        [ Math.min(...ohlc.low), Math.max(ohlc.high) ];
 
       const layout = {
         title: this.symbol,
