@@ -35,6 +35,7 @@ export default class Tradebot {
   static EVENT_FETCH_RESPONSE = 'fetchResponse';
 
   async init() {
+    // registering an event listeners
     Tradebot.EVENT_BUS.on(Tradebot.EVENT_FETCH_REQUEST, async ({ currency, period, n } = {}) => {
 
       try {
@@ -60,7 +61,7 @@ export default class Tradebot {
   }
 
   async plotData(algorithm, maxShowRange, screenshotPath) {
-    await this.plotter.renderData((maxShowRange, roc240, roc480, macd, macdSignal, macdHistogram, rsi, ohlc) => {
+    await this.plotter.renderData((maxShowRange, bbandHigh, bbandLow, bbandLine, macd, macdSignal, macdHistogram, rsi, ohlc) => {
 
       const _zeroFilledArray = n => Array(...Array(n)).map(a => 0);
       const _padLeft = (array, n) => _zeroFilledArray(n).concat(...array);
@@ -68,18 +69,22 @@ export default class Tradebot {
       const dataLen = ohlc.close.length;
 
       const data = [
+        // candle
+        Object.assign({
+          x: [...Array(dataLen).keys()],
+          xaxis: 'x4',
+          yaxis: 'y4',
+          type: 'candlestick',
+          name: 'close',
+        }, ohlc),
+        // rsi
         {
           x: [...Array(dataLen).keys()],
-          y: _padLeft(roc240, dataLen - roc240.length),
+          y: _padLeft(rsi, dataLen - rsi.length),
           type: 'scatter',
-          name: 'roc240',
+          name: 'rsi',
         },
-        {
-          x: [...Array(dataLen).keys()],
-          y: _padLeft(roc480, dataLen - roc480.length),
-          type: 'scatter',
-          name: 'roc480',
-        },
+        // macd
         {
           x: [...Array(dataLen).keys()],
           y: _padLeft(macd, dataLen - macd.length),
@@ -103,28 +108,54 @@ export default class Tradebot {
           yaxis: 'y2',
           type: 'bar',
           name: 'macdHisto',
+          marker: {
+            color: '#8C5EB5',
+          },
+        },
+        // volume
+        {
+          x: ohlc._time,
+          y: ohlc.volume,
+          xaxis: 'x3',
+          yaxis: 'y3',
+          type: 'bar',
+          name: 'close',
+          marker: {
+            color: ohlc.close.map((close, i) => close > ohlc.close[i - 1] ? 'rgb(162,214,187)' : 'rgb(238,163,158)'),
+          },
+        },
+        // BBands
+        {
+          x: [...Array(dataLen).keys()],
+          y: _padLeft(bbandHigh, dataLen - bbandHigh.length),
+          xaxis: 'x4',
+          yaxis: 'y4',
+          type: 'scatter',
+          name: 'bband_high',
+          line: { color: 'rgba(100,100,100,0.5)' },
         },
         {
           x: [...Array(dataLen).keys()],
-          y: _padLeft(rsi, dataLen - rsi.length),
-          xaxis: 'x3',
-          yaxis: 'y3',
-          type: 'scatter',
-          name: 'rsi',
-        },
-        Object.assign({
-          x: ohlc._time,
+          y: _padLeft(bbandLow, dataLen - bbandLow.length),
           xaxis: 'x4',
           yaxis: 'y4',
-          type: 'candlestick',
-          name: 'close',
-        }, ohlc),
+          type: 'scatter',
+          name: 'bband_low',
+          line: { color: 'rgba(100,100,100,0.5)' },
+        },
+        {
+          x: [...Array(dataLen).keys()],
+          y: _padLeft(bbandLine, dataLen - bbandLine.length),
+          xaxis: 'x4',
+          yaxis: 'y4',
+          type: 'scatter',
+          name: 'bband_line',
+          line: { color: 'rgba(80,80,80,0.5)' },
+        },
       ];
 
-      const rangeToShow = dataLen > maxShowRange ? [ dataLen - maxShowRange, dataLen ] : undefined;
-      const ohlcYrange = rangeToShow ?
-        [ Math.min(...ohlc.low.slice(...rangeToShow)), Math.max(...ohlc.high.slice(...rangeToShow)) /* TODO: find a better way. */ ] :
-        [ Math.min(...ohlc.low), Math.max(ohlc.high) ];
+      const rangeToShow = [ Math.max(0, dataLen - maxShowRange), dataLen ];
+      const ohlcYrange = [ Math.min(...ohlc.low.slice(...rangeToShow)), Math.max(...ohlc.high.slice(...rangeToShow)) /* TODO: find a better way. */ ];
 
       const layout = {
         title: this.symbol,
@@ -149,8 +180,9 @@ export default class Tradebot {
 
     }, [
       maxShowRange,
-      algorithm.roc240,
-      algorithm.roc480,
+      algorithm.bbands.outRealUpperBand,
+      algorithm.bbands.outRealLowerBand,
+      algorithm.bbands.outRealMiddleBand,
       algorithm.macd.outMACD,
       algorithm.macd.outMACDSignal,
       algorithm.macd.outMACDHist,
